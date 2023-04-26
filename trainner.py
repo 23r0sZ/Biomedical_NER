@@ -11,12 +11,14 @@ import subprocess
 from optparse import OptionParser
 from config.config import Config as config
 import pickle
+import re
 seed_torch()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train(train_iter, eval_iter, tag2idx, config, bert_model="microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"):
     #print('#Tags: ', len(tag2idx))
     unique_labels = list(tag2idx.keys())
+    print(unique_labels)
     #model = Bert_CRF.from_pretrained(bert_model, num_labels = len(tag2idx))
     model = BertForTokenClassification.from_pretrained(bert_model, num_labels=len(tag2idx))
     model.train()
@@ -40,6 +42,7 @@ def train(train_iter, eval_iter, tag2idx, config, bert_model="microsoft/BiomedNL
     model.train()
     training_loss = []
     validation_loss = []
+    fb1_scores = []
     train_iterator = trange(num_epoch, desc="Epoch", disable=0)
     start_time = timeit.default_timer()
 
@@ -118,14 +121,27 @@ def train(train_iter, eval_iter, tag2idx, config, bert_model="microsoft/BiomedNL
         process = subprocess.Popen(command,stdout=subprocess.PIPE, shell=True)
         result = process.communicate()[0].decode("utf-8")
         print(result)
-        if val_loss/len(eval_iter) >= max(validation_loss) or epoch==num_epoch:
+        fb1_pattern = r"FB1:\s+(\d+\.\d+)%"
+        fb1_match = re.search(fb1_pattern, result)
+        if fb1_match:
+            fb1_score = fb1_match.group(1)
+            fb1_scores.append(fb1_score)
+        if fb1_score and (fb1_score >= max(fb1_scores) or epoch==num_epoch):
+            print('saving best model...')
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': tr_loss/len(train_iter),
-            }, config.apr_dir + 'model_' + str(epoch) + '.pt')
-
+            }, config.apr_dir + 'best_model' + '.pt')
+        if epoch==num_epoch:
+            print('saving last model...')
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': tr_loss/len(train_iter),
+            }, config.apr_dir + 'last_model' + '.pt')
     total_time = timeit.default_timer() - start_time
     print('Total training time: ',   total_time)
     return training_loss, validation_loss
