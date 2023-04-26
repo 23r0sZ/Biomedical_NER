@@ -118,12 +118,13 @@ def train(train_iter, eval_iter, tag2idx, config, bert_model="microsoft/BiomedNL
         process = subprocess.Popen(command,stdout=subprocess.PIPE, shell=True)
         result = process.communicate()[0].decode("utf-8")
         print(result)
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': tr_loss/len(train_iter),
-        }, config.apr_dir + 'model_' + str(epoch) + '.pt')
+        if val_loss/len(eval_iter) >= max(validation_loss) or epoch==num_epoch:
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'loss': tr_loss/len(train_iter),
+            }, config.apr_dir + 'model_' + str(epoch) + '.pt')
 
     total_time = timeit.default_timer() - start_time
     print('Total training time: ',   total_time)
