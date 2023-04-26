@@ -1,7 +1,7 @@
 from modules.utils import seed_torch
 from modules.datasets.NER_dataset import NER_Dataset,dataset_train,dataset_test
 import torch
-from transformers import BertForTokenClassification,BertTokenizer
+from transformers import BertTokenizer
 import numpy as np
 import datetime
 from transformers import AdamW, get_linear_schedule_with_warmup
@@ -12,6 +12,7 @@ from optparse import OptionParser
 from config.config import Config as config
 import pickle
 import re
+from modules.model.bert import BertForTokenClassification
 seed_torch()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -21,6 +22,7 @@ def train(train_iter, eval_iter, tag2idx, config, bert_model="microsoft/BiomedNL
     print(unique_labels)
     #model = Bert_CRF.from_pretrained(bert_model, num_labels = len(tag2idx))
     model = BertForTokenClassification.from_pretrained(bert_model, num_labels=len(tag2idx))
+    print(model)
     model.train()
     if torch.cuda.is_available():
       model.cuda()

@@ -1,3 +1,10 @@
+from transformers import BertPreTrainedModel,BertModel
+from torch import nn
+import torch
+from torchcrf import CRF
+import torch.nn.functional as F
+log_soft = F.log_softmax
+
 class Bert_CRF(BertPreTrainedModel):
     def __init__(self, config):
         super(Bert_CRF, self).__init__(config)
