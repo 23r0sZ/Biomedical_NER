@@ -88,8 +88,7 @@ def train(train_iter, eval_iter, tag2idx, config, bert_model="microsoft/BiomedNL
             token_ids, attn_mask, org_tok_map, labels, original_token, sorted_idx = batch
             #attn_mask.dt
             inputs = {'input_ids': token_ids.to(device),
-                      'attention_mask' : attn_mask.to(device),
-                      'labels' : labels.to(device)
+                      'attention_mask' : attn_mask.to(device)
                      }  
             
             # dev_inputs = {'input_ids' : token_ids.to(device),
@@ -155,8 +154,7 @@ def test(config, test_iter, model, unique_labels, test_output):
         token_ids, attn_mask, org_tok_map, labels, original_token, sorted_idx = batch
         #attn_mask.dt
         inputs = {'input_ids': token_ids.to(device),
-                  'attention_mask' : attn_mask.to(device),
-                  'labels' : labels.to(device)
+                  'attention_mask' : attn_mask.to(device)
                  }  
         with torch.torch.no_grad():
             outputs = model(**inputs)
