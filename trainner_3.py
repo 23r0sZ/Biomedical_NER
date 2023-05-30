@@ -178,7 +178,7 @@ def load_model(config, do_lower_case=True):
     f = open(config.apr_dir +'tag2idx.pkl', 'rb')
     tag2idx = pickle.load(f)
     unique_labels = list(tag2idx.keys())
-    model = Bert_CRF.from_pretrained(config.bert_model, num_labels=len(tag2idx))
+    model = Bert_BiLSTM_CRF.from_pretrained(config.bert_model, num_labels=len(tag2idx))
     checkpoint = torch.load(config.apr_dir + config.model_name, map_location='cpu')
     model.load_state_dict(checkpoint['model_state_dict'])
     global bert_tokenizer
